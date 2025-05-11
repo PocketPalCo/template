@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio WS Test</title>
+</head>
+<body>
+<button id="connect">Connect WS</button>
+<button id="send">Send RAW Chunk</button>
+<button id="sendMsg">Send Msg</button>
+<pre id="log"></pre>
+
+<script>
+  const log = txt => document.getElementById("log").textContent += txt + "\n";
+  let ws;
+
+  document.getElementById("connect").onclick = () => {
+    const userId = "user1"
+    ws = new WebSocket(`ws://localhost:8080/ws/${userId}`); // RFC6455
+    ws.binaryType = "arraybuffer";
+    ws.onopen    = () => log("✅ WS connected");
+    ws.onmessage = e  => {
+      if (e.data.byteLength) {
+        log(`📩 Echoed ${e.data.byteLength} bytes`);
+        return
+      }
+
+      log(`📩 Received: ${e.data}`);
+
+    };
+    ws.onclose   = e  => log(`❌ WS closed (code=${e.code})`);
+    ws.onerror   = e  => log("⚠️ WS error");
+  };
+
+  document.getElementById("send").onclick = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const size = 64 * 1024; // 64 KiB
+      const buf  = new Uint8Array(size);
+      window.crypto.getRandomValues(buf);
+      ws.send(buf);
+      log(`📤 Sent ${size} bytes`);
+    }
+  };
+
+  document.getElementById("sendMsg").onclick = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = 'Hello bich'
+      ws.send(message);
+      log(`📤 Sent ${size} bytes`);
+    }
+  };
+</script>
+</body>
+</html>

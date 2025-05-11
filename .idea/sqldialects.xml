@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/internal/infra/server/http_routes.go" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/internal/repository/ws_session_storage.go" dialect="GenericSQL" />
+  </component>
+</project>
