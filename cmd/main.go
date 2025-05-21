@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/PocketPalCo/shopping-service/config"
+	"github.com/PocketPalCo/shopping-service/internal/core/rtc" // Added import for rtc package
 	"github.com/PocketPalCo/shopping-service/internal/infra/postgres"
 	"github.com/PocketPalCo/shopping-service/internal/infra/server"
 	"github.com/PocketPalCo/shopping-service/pkg/logger"
@@ -29,7 +30,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	mainServer := server.New(ctx, &cfg, conn)
+	rtcService := rtc.NewRTCService() // Create RTCService instance
+
+	mainServer := server.New(ctx, &cfg, conn, rtcService) // Pass rtcService to server.New
 	go mainServer.Start()
 
 	interrupt := make(chan os.Signal, 1)

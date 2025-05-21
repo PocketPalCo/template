@@ -14,7 +14,273 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/v1/rtc/room": {
+            "post": {
+                "description": "Creates a new RTC room. A room ID can be provided, or one will be generated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rtc"
+                ],
+                "summary": "Create a new RTC room",
+                "parameters": [
+                    {
+                        "description": "Room creation details",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/rest.CreateRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Room created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/rest.CreateRoomResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rtc/room/{roomId}": {
+            "get": {
+                "description": "Retrieves the details of a specific RTC room, including the list of users.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rtc"
+                ],
+                "summary": "Get RTC room details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room details retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/rest.GetRoomResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - Room not found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rtc/room/{roomId}/join": {
+            "post": {
+                "description": "Allows a user to join an existing RTC room.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rtc"
+                ],
+                "summary": "Join an RTC room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User ID to join the room",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.JoinLeaveRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User joined successfully",
+                        "schema": {
+                            "$ref": "#/definitions/rest.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input or user ID missing",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - Room not found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Could not join room",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/rtc/room/{roomId}/leave": {
+            "post": {
+                "description": "Allows a user to leave an RTC room.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rtc"
+                ],
+                "summary": "Leave an RTC room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User ID to leave the room",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.JoinLeaveRoomRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User left successfully",
+                        "schema": {
+                            "$ref": "#/definitions/rest.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Invalid input or user ID missing",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found - Room or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Could not leave room",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "rest.CreateRoomRequest": {
+            "type": "object",
+            "properties": {
+                "room_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.CreateRoomResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "users": {
+                    "description": "Number of users in the room",
+                    "type": "integer"
+                }
+            }
+        },
+        "rest.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.GetRoomResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "users": {
+                    "description": "List of user IDs in the room",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "rest.JoinLeaveRoomRequest": {
+            "type": "object",
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

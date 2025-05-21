@@ -5,7 +5,9 @@ import (
 	"errors"
 	"github.com/PocketPalCo/shopping-service/config"
 	"github.com/PocketPalCo/shopping-service/docs"
+	"github.com/PocketPalCo/shopping-service/internal/core/rtc" // Added import for rtc
 	"github.com/PocketPalCo/shopping-service/internal/infra/postgres"
+	"github.com/PocketPalCo/shopping-service/internal/infra/rest" // Added import for rest
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
@@ -53,7 +55,7 @@ func initGlobalMiddlewares(app *fiber.App, cfg *config.Config) {
 
 }
 
-func registerHttpRoutes(app *fiber.App, cfg *config.Config, db postgres.DB) {
+func registerHttpRoutes(app *fiber.App, cfg *config.Config, db postgres.DB, rtcService *rtc.RTCService) { // Added rtcService parameter
 	// swagger
 	docs.SwaggerInfo.Version = "1.0.0"
 	app.Get("/swagger/*", swagger.HandlerDefault)
@@ -99,6 +101,15 @@ func registerHttpRoutes(app *fiber.App, cfg *config.Config, db postgres.DB) {
 		return c.JSON(rows)
 	}))
 
+	// Register RTC routes
+	// The config passed to RegisterRTCRoutes is the main app config.
+	// If rtc_routes specifically needs a sub-config, this might need adjustment
+	// or the rtc_routes.Config placeholder needs to be aligned/removed.
+	// For now, we use the placeholder rest.Config which is an empty struct.
+	// We'll need to replace `&rest.Config{}` with `cfg` if `rest.Config` is removed
+	// and `RegisterRTCRoutes` is updated to take `*config.Config`.
+	// Assuming rtc_routes.go uses the placeholder for now.
+	rest.RegisterRTCRoutes(app, rtcService, cfg) // Register RTC routes, passing the main config
 }
 
 type Resp struct {
