@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/PocketPalCo/shopping-service/config"
+	"github.com/PocketPalCo/shopping-service/internal/core/rtc" // Added import for rtc package
 	"github.com/PocketPalCo/shopping-service/internal/infra/postgres"
 	"github.com/PocketPalCo/shopping-service/pkg/telemetry"
 	"github.com/gofiber/fiber/v2"
@@ -26,11 +27,12 @@ type Server struct {
 	db             postgres.DB
 	traceProvider  *sdktrace.TracerProvider
 	metricProvider *metric.MeterProvider
+	rtcService     *rtc.RTCService // Added rtcService field
 }
 
 var tracer = otel.Tracer("server")
 
-func New(ctx context.Context, cfg *config.Config, dbConn *pgxpool.Pool) *Server {
+func New(ctx context.Context, cfg *config.Config, dbConn *pgxpool.Pool, rtcService *rtc.RTCService) *Server { // Added rtcService parameter
 	traceExporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(cfg.JaegerEndpoint)))
 	if err != nil {
 		slog.Error("failed to initialize stdout exporter", slog.String("error", err.Error()))
@@ -84,6 +86,7 @@ func New(ctx context.Context, cfg *config.Config, dbConn *pgxpool.Pool) *Server 
 		db:             instrumentedConn,
 		traceProvider:  tp,
 		metricProvider: provider,
+		rtcService:     rtcService, // Store rtcService
 	}
 }
 
@@ -109,9 +112,9 @@ func (s *Server) Shutdown() {
 
 func (s *Server) Start() {
 	initGlobalMiddlewares(s.app, s.cfg)
-	registerHttpRoutes(s.app, s.cfg, s.db)
+	registerHttpRoutes(s.app, s.cfg, s.db, s.rtcService) // Pass rtcService to registerHttpRoutes
 
-	setupWs(s.app, s.cfg, s.db)
+	setupWs(s.app, s.cfg, s.db, s.rtcService) // Pass rtcService to setupWs
 
 	slog.Info("Starting server", slog.String("address", s.cfg.ServerAddress))
 

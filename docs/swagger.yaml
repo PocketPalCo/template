@@ -1,4 +1,179 @@
+definitions:
+  rest.CreateRoomRequest:
+    properties:
+      room_id:
+        type: string
+    type: object
+  rest.CreateRoomResponse:
+    properties:
+      id:
+        type: string
+      users:
+        description: Number of users in the room
+        type: integer
+    type: object
+  rest.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  rest.GetRoomResponse:
+    properties:
+      id:
+        type: string
+      users:
+        description: List of user IDs in the room
+        items:
+          type: string
+        type: array
+    type: object
+  rest.JoinLeaveRoomRequest:
+    properties:
+      user_id:
+        type: string
+    type: object
+  rest.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /v1/rtc/room:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new RTC room. A room ID can be provided, or one will
+        be generated.
+      parameters:
+      - description: Room creation details
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/rest.CreateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Room created successfully
+          schema:
+            $ref: '#/definitions/rest.CreateRoomResponse'
+        "400":
+          description: Bad Request - Invalid input
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Create a new RTC room
+      tags:
+      - rtc
+  /v1/rtc/room/{roomId}:
+    get:
+      description: Retrieves the details of a specific RTC room, including the list
+        of users.
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Room details retrieved successfully
+          schema:
+            $ref: '#/definitions/rest.GetRoomResponse'
+        "404":
+          description: Not Found - Room not found
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Get RTC room details
+      tags:
+      - rtc
+  /v1/rtc/room/{roomId}/join:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to join an existing RTC room.
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: User ID to join the room
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/rest.JoinLeaveRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User joined successfully
+          schema:
+            $ref: '#/definitions/rest.SuccessResponse'
+        "400":
+          description: Bad Request - Invalid input or user ID missing
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "404":
+          description: Not Found - Room not found
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error - Could not join room
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Join an RTC room
+      tags:
+      - rtc
+  /v1/rtc/room/{roomId}/leave:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to leave an RTC room.
+      parameters:
+      - description: Room ID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: User ID to leave the room
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/rest.JoinLeaveRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User left successfully
+          schema:
+            $ref: '#/definitions/rest.SuccessResponse'
+        "400":
+          description: Bad Request - Invalid input or user ID missing
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "404":
+          description: Not Found - Room or user not found
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error - Could not leave room
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: Leave an RTC room
+      tags:
+      - rtc
 swagger: "2.0"
