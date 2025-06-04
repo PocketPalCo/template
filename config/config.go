@@ -159,7 +159,7 @@ func (c Config) Fiber() fiber.Config {
 	// Return Fiber configuration.
 	return fiber.Config{
 		ReadTimeout: time.Second * time.Duration(c.ServerReadTimeout),
-		BodyLimit:   10 * 1024 * 1024 * 1024, // 10MB
+		BodyLimit:   10 * 1024 * 1024, // 10MB
 	}
 }
 
