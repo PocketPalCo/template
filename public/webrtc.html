@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC Audio Test</title>
+</head>
+<body>
+<button id="start">Start WebRTC</button>
+<pre id="log"></pre>
+<script>
+const log = txt => document.getElementById('log').textContent += txt + "\n";
+
+document.getElementById('start').onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+  const pc = new RTCPeerConnection();
+  stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  const res = await fetch('/webrtc/offer', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({sdp: offer.sdp})
+  });
+  const ans = await res.json();
+  await pc.setRemoteDescription({type: 'answer', sdp: ans.sdp});
+  log('Connection established');
+};
+</script>
+</body>
+</html>
