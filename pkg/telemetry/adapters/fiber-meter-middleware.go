@@ -14,7 +14,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
-	"go.opentelemetry.io/otel/trace"
 	oteltrace "go.opentelemetry.io/otel/trace"
 	"net/http"
 	"time"
@@ -183,14 +182,14 @@ func httpServerMetricAttributesFromRequest(c *fiber.Ctx) []attribute.KeyValue {
 	return attrs
 }
 
-func spanStatusFromHTTPStatusCodeAndSpanKind(code int, spanKind trace.SpanKind) (codes.Code, string) {
+func spanStatusFromHTTPStatusCodeAndSpanKind(code int, spanKind oteltrace.SpanKind) (codes.Code, string) {
 	// This code block ignores the HTTP 306 status code. The 306 status code is no longer in use.
 	if http.StatusText(code) == "" {
 		return codes.Error, fmt.Sprintf("Invalid HTTP status code %d", code)
 	}
 
 	if (code >= http.StatusContinue && code < http.StatusBadRequest) ||
-		(spanKind == trace.SpanKindServer && isCode4xx(code)) {
+		(spanKind == oteltrace.SpanKindServer && isCode4xx(code)) {
 		return codes.Unset, ""
 	}
 	return codes.Error, ""

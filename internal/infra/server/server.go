@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -28,12 +28,14 @@ type Server struct {
 	metricProvider *metric.MeterProvider
 }
 
-var tracer = otel.Tracer("server")
-
 func New(ctx context.Context, cfg *config.Config, dbConn *pgxpool.Pool) *Server {
-	traceExporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(cfg.JaegerEndpoint)))
+	traceExporter, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithEndpoint(cfg.OtlpEndpoint),
+		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithDialOption(grpc.WithUserAgent("shopping-service")),
+	)
 	if err != nil {
-		slog.Error("failed to initialize stdout exporter", slog.String("error", err.Error()))
+		slog.Error("failed to initialize otlp trace exporter", slog.String("error", err.Error()))
 		return nil
 	}
 	metricExporter, err := otlpmetricgrpc.New(ctx,
