@@ -114,6 +114,7 @@ func (s *Server) Start() {
 	registerHttpRoutes(s.app, s.cfg, s.db)
 
 	setupWs(s.app, s.cfg, s.db)
+	setupWebRTC(s.app)
 
 	slog.Info("Starting server", slog.String("address", s.cfg.ServerAddress))
 
