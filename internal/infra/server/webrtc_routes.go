@@ -54,7 +54,10 @@ func setupWebRTC(app *fiber.App) {
 			return fiber.ErrInternalServerError
 		}
 
-		resp, _ := json.Marshal(answerResponse{SDP: answer.SDP})
+		<-webrtc.GatheringCompletePromise(peer)
+
+		local := peer.LocalDescription()
+		resp, _ := json.Marshal(answerResponse{SDP: local.SDP})
 		return c.Send(resp)
 	})
 }
