@@ -16,7 +16,9 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod tidy
       - name: Vet
         run: go vet ./...
       - name: Lint
@@ -50,7 +52,9 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Install dependencies
-        run: go mod download
+        run: |
+          go mod download
+          go mod tidy
       - name: Install migrate
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
       - name: Run migrations
