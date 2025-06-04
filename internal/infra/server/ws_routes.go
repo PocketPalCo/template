@@ -114,7 +114,10 @@ func registerConn(userID string, conn *websocket.Conn) {
 	set[conn] = struct{}{}
 
 	slog.Info("WS registered", slog.String("id", userID), slog.Int("count", len(set)))
-	go Broadcast([]byte(fmt.Sprintf("User %s joined: %s", userID, conn)))
+	// Notify other clients that a new user has joined. We don't need to
+	// include the raw connection pointer in the message as it is not
+	// meaningful to end users and results in a format mismatch warning.
+	go Broadcast([]byte(fmt.Sprintf("User %s joined", userID)))
 }
 
 func unregisterConn(userID string, conn *websocket.Conn) {
